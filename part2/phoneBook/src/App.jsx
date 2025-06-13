@@ -1,41 +1,68 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 import { Filter, Numbers, PersonForm } from './components'
+import serverService from './services/calls'
+import { v4 as uuidv4 } from 'uuid'
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]) 
+  const [persons, setPersons] = useState([]) 
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
-  const [newPersons, setNewPersons] = useState(persons)
+
+  // Fetching data from the server
+  useEffect(() => {
+    console.log('effect')
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        console.log('promise fulfilled')
+        setPersons(response.data)
+      })
+  }, [])
+  console.log('render', persons.length, 'people')
+
+
+  const filteredPersons = persons.filter(person =>
+    person.name.toLowerCase().includes(newFilter.toLowerCase())
+  )
 
   const addPerson = (event) => {
     event.preventDefault()
-    console.log(event.target.value);
     const personObject = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1,
+      id: uuidv4(),
     }
-    console.log(personObject);
     
     // Checking if the person is already in the system
-    const exists = persons.some(person => person.name === personObject.name || person.number === personObject.number)
-    console.log(persons);
+    const existingPerson = persons.find(p => p.name === newName)
+    const exists = Boolean(existingPerson)
+
+    console.log('here comes the existing one');
+    console.log(existingPerson);
+    
+    
     
     if (exists) {
-      window.alert('Some of your input information is already in the system. Try again');
+      if(window.confirm(`${personObject.name} is already added to phoneBook, replace the old number with a new one?`)){
+        serverService
+        .update(existingPerson.id, personObject).then(newOne => {
+          setPersons(persons.map(p => p.id === existingPerson.id ? newOne : p))
+        })
+      }
     } else {
       setPersons(persons.concat(personObject))
-      setNewPersons(persons.concat(personObject))
+      
+      // Adding them to server (ex. 2.12.)
+      serverService
+        .create(personObject).then((returnedPerson) => {
+        setPersons(persons.concat(returnedPerson))
+      })
+      // Setting the text fields back to empty
       setNewName('')
       setNewNumber('')
     }
-    console.log(persons)
   } 
 
   const handlePersonChange = (event) => {
@@ -49,9 +76,18 @@ const App = () => {
   const handleFilterChange = (event) => {
     const filterValue = event.target.value
     setNewFilter(filterValue)
-    const newList = persons.filter(person => person.name.toLowerCase().includes(filterValue.toLowerCase()))
-    setNewPersons(newList)
+  }
+
+  const deletePerson = (id) => {
+    // event.preventDefault()
+    const person = persons.find(p => p.id === id)
     
+    if(window.confirm(`Delete ${person.name}?`)) {
+      serverService
+      .deletePerson(id).then((response) => {
+        setPersons(persons.filter(p => p.id !== id))
+      })
+    }
   }
 
   return (
@@ -62,7 +98,7 @@ const App = () => {
       <PersonForm onSubmit={addPerson} newName={newName} handleNameChange={handlePersonChange}
       newNumber={newNumber} handleNumberChange={handleNumberChange} />
       <h2>Numbers</h2>
-      <Numbers newPersons={newPersons} />
+      <Numbers newPersons={filteredPersons} deletePerson={deletePerson} />
     </div>
   )
 }

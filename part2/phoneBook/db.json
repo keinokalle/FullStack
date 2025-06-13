@@ -1,0 +1,24 @@
+{
+  "persons": [
+    {
+      "name": "oona",
+      "number": "32523523",
+      "id": "ca802ca0-db82-4a2c-96b5-c46a6f0c515e"
+    },
+    {
+      "id": "7b839cf6-57f4-4140-923b-59d7b96c840d",
+      "name": "uusi",
+      "number": "320952"
+    },
+    {
+      "id": "362236a1-1393-44e2-a87f-7e460a7eb810",
+      "name": "viina",
+      "number": "32523"
+    },
+    {
+      "name": "roosa",
+      "number": "32523",
+      "id": "ad65d701-609d-454c-8bd8-8bdf149ea2f9"
+    }
+  ]
+}
