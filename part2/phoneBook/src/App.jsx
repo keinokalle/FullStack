@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { Filter, Numbers, PersonForm } from './components'
+import { Filter, Numbers, PersonForm, Notification } from './components'
 import serverService from './services/calls'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -9,6 +9,7 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const [notification, newNotification] =useState(null)
 
   // Fetching data from the server
   useEffect(() => {
@@ -50,11 +51,19 @@ const App = () => {
         .update(existingPerson.id, personObject).then(newOne => {
           setPersons(persons.map(p => p.id === existingPerson.id ? newOne : p))
         })
+        .catch(error => {
+          console.log("Catched but what now")
+          newNotification({message: `The person '${personObject.name}' was already deleted from server`, good: false})
+          setPersons(persons.filter(p => p.id !== existingPerson.id))
+        })
+        setTimeout(() => {
+          newNotification(null) },
+        4000)
       }
     } else {
       setPersons(persons.concat(personObject))
       
-      // Adding them to server (ex. 2.12.)
+      // Adding them to server (ex. 2.12.)new
       serverService
         .create(personObject).then((returnedPerson) => {
         setPersons(persons.concat(returnedPerson))
@@ -63,6 +72,11 @@ const App = () => {
       setNewName('')
       setNewNumber('')
     }
+    // Notification for the successfull addition
+    newNotification({message: `Added ${personObject.name}`, good: true})
+    setTimeout(() => {
+      newNotification(null)
+    }, 4000)
   } 
 
   const handlePersonChange = (event) => {
@@ -93,6 +107,7 @@ const App = () => {
   return (
     <div>
       <h2>Numberbook</h2>
+      <Notification message={notification?.message} good={notification?.good} />
       <Filter value={newFilter} onChange={handleFilterChange} />
       <h2>Add a new</h2>
       <PersonForm onSubmit={addPerson} newName={newName} handleNameChange={handlePersonChange}
