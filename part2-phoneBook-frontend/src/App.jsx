@@ -14,16 +14,19 @@ const App = () => {
   // Fetching data from the server
   useEffect(() => {
     console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
+    serverService
+      .getAll()
+      .then(data => {
         console.log('promise fulfilled')
-        setPersons(response.data)
+        console.log(data);
+        setPersons(data)
       })
   }, [])
-  console.log('render', persons.length, 'people')
 
 
+  console.log('this is persons');
+  console.log(persons);
+  
   const filteredPersons = persons.filter(person =>
     person.name.toLowerCase().includes(newFilter.toLowerCase())
   )
