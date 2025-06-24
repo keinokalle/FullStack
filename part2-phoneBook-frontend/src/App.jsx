@@ -22,10 +22,6 @@ const App = () => {
         setPersons(data)
       })
   }, [])
-
-
-  console.log('this is persons');
-  console.log(persons);
   
   const filteredPersons = persons.filter(person =>
     person.name.toLowerCase().includes(newFilter.toLowerCase())
@@ -42,9 +38,6 @@ const App = () => {
     // Checking if the person is already in the system
     const existingPerson = persons.find(p => p.name === newName)
     const exists = Boolean(existingPerson)
-
-    console.log('here comes the existing one');
-    console.log(existingPerson);
     
     
     
@@ -55,7 +48,6 @@ const App = () => {
           setPersons(persons.map(p => p.id === existingPerson.id ? newOne : p))
         })
         .catch(error => {
-          console.log("Catched but what now")
           newNotification({message: `The person '${personObject.name}' was already deleted from server`, good: false})
           setPersons(persons.filter(p => p.id !== existingPerson.id))
         })
@@ -63,25 +55,22 @@ const App = () => {
           newNotification(null) },
         4000)
       }
-    } else {
-      setPersons(persons.concat(personObject))
-      
+    } else {      
       // Adding them to server (ex. 2.12.)new
       serverService
-        .create(personObject).then((returnedPerson) => {
-        setPersons(persons.concat(returnedPerson))
-      })
+        .create(personObject)
+        .then((returnedPerson) => {
+          setPersons(persons.concat(returnedPerson.data))
+        })
+        .catch(error => {          
+          newNotification({message: error.response.data.error})
+        })
       // Setting the text fields back to empty
       setNewName('')
       setNewNumber('')
     }
-    // Notification for the successfull addition
-    newNotification({message: `Added ${personObject.name}`, good: true})
-    setTimeout(() => {
-      newNotification(null)
-    }, 4000)
-  } 
 
+  } 
   const handlePersonChange = (event) => {
     setNewName(event.target.value)
   }
@@ -103,6 +92,10 @@ const App = () => {
       serverService
       .deletePerson(id).then((response) => {
         setPersons(persons.filter(p => p.id !== id))
+        newNotification({message: `The person '${person.name}' was deleted successfully from the server`, good: true})
+        setTimeout(() => {
+          newNotification(null) },
+        4000)
       })
     }
   }
