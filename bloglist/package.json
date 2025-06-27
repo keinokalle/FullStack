@@ -4,16 +4,20 @@
   "description": "course exercise to intialize a project",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch index.js",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "dev": "cross-env NODE_ENV=development node --watch index.js",
+    "test": "cross-env  NODE_ENV=test node --test",
     "lint": "eslint ."
   },
   "author": "Kalle Keinonen",
   "license": "ISC",
   "dependencies": {
+    "cross-env": "^7.0.3",
     "dotenv": "^16.5.0",
-    "express": "^5.1.0",
-    "mongoose": "^8.16.0"
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "mongoose": "^8.16.0",
+    "supertest": "^7.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
