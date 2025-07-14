@@ -53,9 +53,28 @@ const blogsInDb = async () => {
   return blogs.map(b => b.toJSON())
 }
 
+const createBlogsWithUser = async (blogs, user) => {
+  // Create blogs with the user as creator
+  const blogPromises = blogs.map(blog => {
+    const blogToSave = new Blog({
+      ...blog,
+      user: user._id || user.id
+    })
+    return blogToSave.save()
+  })
+
+  const savedBlogs = await Promise.all(blogPromises)
+
+  return {
+    user: user,
+    blogs: savedBlogs
+  }
+}
+
 module.exports = {
   initialBlogs,
   initialUsers,
   usersInDb,
-  blogsInDb
+  blogsInDb,
+  createBlogsWithUser
 }

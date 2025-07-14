@@ -1,55 +1,77 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
-const User = require('../models/user')
+const middleware = require('../utils/middleware')
 
-blogsRouter.get('/', (request, response) => {
-  response.send('<h1>Bloglist </h1>')
+// Helper function for routes that need authentication
+const requireAuth = [middleware.userExtractor]
+
+blogsRouter.get('/', async (request, response) => {
+  const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
+  response.json(blogs)
 })
 
-blogsRouter.get('/api/blogs', (request, response) => {
-  Blog.find({}).then((blogs) => {
-    response.json(blogs)
-  })
-})
-
-blogsRouter.post('/api/blogs', async (request, response) => {
-  const { title, url, userId } = request.body
-
-  const user = await User.findById(userId)
-
-  if (!user) {
-    return response.status(400).json({ error: 'userId missing or not valid' })
-  }
+// Use the helper for routes that need authentication
+blogsRouter.post('/', ...requireAuth, async (request, response) => {
+  const { title, url } = request.body
 
   if (!title || !url) {
     return response.status(400).json({ error: 'title or url missing' })
   }
+
+  if (!request.user) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
+
   const blog = new Blog({
     title: title,
     author: request.body.author || '',
     url: url,
-    user: userId
+    user: request.user._id,
   })
+
   const savedBlog = await blog.save()
-  user.blogs = user.blogs.concat(savedBlog._id)
 
-  await user.save()
+  // Add the blog to the user's blogs array
+  request.user.blogs = request.user.blogs.concat(savedBlog._id)
+  await request.user.save()
 
-  response.status(201).json(savedBlog)
+  // Populate the user information before sending response
+  const populatedBlog = await Blog.findById(savedBlog._id).populate('user', {
+    username: 1,
+    name: 1,
+  })
+
+  response.status(201).json(populatedBlog)
 })
 
-blogsRouter.delete('/api/blogs/:id', async (request, response) => {
+blogsRouter.delete('/:id', ...requireAuth, async (request, response) => {
+  if (!request.user) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
+
+  const blog = await Blog.findById(request.params.id)
+  if (!blog) {
+    return response.status(404).json({ error: 'blog not found' })
+  }
+
+  // Check if the user is the creator of the blog
+  if (blog.user.toString() !== request.user.id.toString()) {
+    return response
+      .status(403)
+      .json({ error: 'not authorized to delete this blog' })
+  }
+
   await Blog.findByIdAndDelete(request.params.id)
   response.status(204).end()
 })
 
-blogsRouter.put('/api/blogs/:id', async (request, response, next) => {
+blogsRouter.put('/:id', async (request, response, next) => {
   const { title, author, url, likes } = request.body
 
-  try{
+  try {
     const blog = await Blog.findById(request.params.id)
 
-    if(!blog) {
+    if (!blog) {
       return response.status(404).end()
     }
     blog.title = title
@@ -62,7 +84,6 @@ blogsRouter.put('/api/blogs/:id', async (request, response, next) => {
   } catch (error) {
     next(error)
   }
-
 })
 
 module.exports = blogsRouter

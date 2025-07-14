@@ -9,16 +9,43 @@ const User = require('../models/user')
 
 const api = supertest(app)
 
+let testToken
+
 beforeEach(async () => {
   await Blog.deleteMany({})
-  await Blog.insertMany(helper.initialBlogs)
-
   await User.deleteMany({})
+
+  // Create users first
   for (const u of helper.initialUsers) {
-    await api
-      .post('/api/users')
-      .send(u)
+    await api.post('/api/users').send(u)
   }
+
+  // Get the first user to create blogs with
+  const users = await helper.usersInDb()
+  const firstUser = users[0]
+
+  // Create blogs with user information
+  await helper.createBlogsWithUser(helper.initialBlogs, firstUser)
+
+  // Create a test user and get token for authenticated tests
+  const newUser = {
+    username: 'testuser',
+    name: 'Test User',
+    password: 'password123',
+  }
+
+  await api.post('/api/users').send(newUser)
+
+  // Login to get token
+  const loginResponse = await api
+    .post('/api/login')
+    .send({
+      username: 'testuser',
+      password: 'password123',
+    })
+    .expect(200)
+
+  testToken = loginResponse.body.token
 })
 
 describe('blog tests', () => {
@@ -43,7 +70,7 @@ describe('blog tests', () => {
     })
   })
 
-  test('adding new blogs works', async() => {
+  test('adding new blogs works with valid token', async() => {
     const newBlog = {
       title: 'String',
       author: 'String',
@@ -53,6 +80,7 @@ describe('blog tests', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${testToken}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -64,8 +92,24 @@ describe('blog tests', () => {
     assert(contents.includes('String'))
   })
 
+  test('adding new blogs fails without token', async() => {
+    const newBlog = {
+      title: 'String',
+      author: 'String',
+      url: 'String',
+      likes: 2,
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+  })
+
+
   test('if no likes are added the default 0 is added', async() => {
-    const newBlog ={
+    const newBlog = {
       title: 'String',
       author: 'String',
       url: 'String',
@@ -73,6 +117,7 @@ describe('blog tests', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${testToken}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -92,6 +137,7 @@ describe('blog tests', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${testToken}`)
       .send(falsyBlog)
       .expect(400)
 
@@ -99,12 +145,25 @@ describe('blog tests', () => {
     assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length)
   })
 
-  test('delete one blog', async() => {
-    const blogsAtStart = await helper.blogsInDb()
-    const blogToDelete = blogsAtStart[0]
+  test('delete one blog with valid token', async() => {
+    // First create a blog with the authenticated user
+    const newBlog = {
+      title: 'Blog to delete',
+      author: 'Test Author',
+      url: 'http://test.com',
+    }
+
+    const createdBlog = await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${testToken}`)
+      .send(newBlog)
+      .expect(201)
+
+    const blogToDelete = createdBlog.body
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${testToken}`)
       .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()
@@ -127,38 +186,20 @@ describe('blog tests', () => {
       .expect(200)
       .expect('Content-Type', /application\/json/)
 
-
     const blogsAtEnd = await helper.blogsInDb()
     const updatedBlog = blogsAtEnd.find(b => b.id === blogToUpdate.id)
     assert.strictEqual(updatedBlog.title, updatedData.title)
     assert.strictEqual(updatedBlog.likes, updatedData.likes)
   })
-})
 
-// Test regarding user adding & stuff
-describe('testing user creation', () => {
-  test.only('new user with valid credentials is added', async () => {
+  test('blogs contain user information', async () => {
+    const response = await api.get('/api/blogs')
 
-    //console.log(helper.usersInDb())
-
-    const newUser = {
-      username: 'Piru',
-      name: 'Helvetin henki',
-      passwordHash: 'woeg',
-      blogs: []
-    }
-
-    await api
-      .post('/api/users')
-      .send(newUser)
-      .expect(200)
-      .expect('Conten1-Type', /application\/json/)
-
-    const usersAtEnd = helper.usersInDb()
-    assert.strictEqual(usersAtEnd.length, helper.initialUsers.length + 1)
-
-    const userNames = usersAtEnd.map(u => u.username)
-    assert(userNames.includes('Piru'))
+    response.body.forEach((blog) => {
+      assert.ok(blog.user, 'Blog should have user information')
+      assert.ok(blog.user.username, 'Blog should have user username')
+      assert.ok(blog.user.name, 'Blog should have user name')
+    })
   })
 })
 
