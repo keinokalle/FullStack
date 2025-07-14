@@ -1,9 +1,11 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
+
 {
-  "title": "Demokratiat hajoaa",
-  "author": "Huolestunut kansalainen",
-  "url": "hs.fi",
-  "likes": 999
+  "title": "Kukat kastuu",
+  "author": "Kastelija Keinonen",
+  "url": "kukka.fi",
+  "likes": 999,
+  "userId": "685e99688937ae64ad307470"
 }

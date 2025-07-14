@@ -5,12 +5,20 @@ const supertest = require('supertest')
 const app = require('../app')
 const helper = require('./test_helper')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const api = supertest(app)
 
 beforeEach(async () => {
   await Blog.deleteMany({})
   await Blog.insertMany(helper.initialBlogs)
+
+  await User.deleteMany({})
+  for (const u of helper.initialUsers) {
+    await api
+      .post('/api/users')
+      .send(u)
+  }
 })
 
 describe('blog tests', () => {
@@ -75,7 +83,7 @@ describe('blog tests', () => {
     assert.strictEqual(blog.likes, 0)
   })
 
-  test.only('if no title || url, responds with status 400 Bad Request', async() => {
+  test('if no title || url, responds with status 400 Bad Request', async() => {
     const falsyBlog = {
       title: 'String',
       author: 'String',
@@ -113,7 +121,6 @@ describe('blog tests', () => {
       url: blogToUpdate.url,
       likes: blogToUpdate.likes + 1
     }
-
     const response = await api
       .put(`/api/blogs/${blogToUpdate.id}`)
       .send(updatedData)
@@ -126,7 +133,33 @@ describe('blog tests', () => {
     assert.strictEqual(updatedBlog.title, updatedData.title)
     assert.strictEqual(updatedBlog.likes, updatedData.likes)
   })
+})
 
+// Test regarding user adding & stuff
+describe('testing user creation', () => {
+  test.only('new user with valid credentials is added', async () => {
+
+    //console.log(helper.usersInDb())
+
+    const newUser = {
+      username: 'Piru',
+      name: 'Helvetin henki',
+      passwordHash: 'woeg',
+      blogs: []
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(200)
+      .expect('Conten1-Type', /application\/json/)
+
+    const usersAtEnd = helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, helper.initialUsers.length + 1)
+
+    const userNames = usersAtEnd.map(u => u.username)
+    assert(userNames.includes('Piru'))
+  })
 })
 
 after(async () => {
