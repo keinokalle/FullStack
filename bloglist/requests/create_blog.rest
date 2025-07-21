@@ -1,6 +1,6 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkVua2VsaSIsImlkIjoiNjg3NGQ4YjIzYmRmYTgyOWY2OTUxMjdjIiwiaWF0IjoxNzUyNDg4NTk5LCJleHAiOjE3NTI0OTIxOTl9.6P1AZS71Yw_mq3SHBoETLI5FIECya6XjF6mV-NF4TPI
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkVua2VsaSIsImlkIjoiNjg3NGYxYmJiMWUxNThhMzY0ZmE0ZDY5IiwiaWF0IjoxNzUyNjUyNjczLCJleHAiOjE3NTI2NTYyNzN9.x4FUbjBRuwflUuZ_TBO1UhtrD7WjinZTfDHQh-gfoeI
 
 {
   "title": "Tää vois olla yksi blogi",
