@@ -39,7 +39,7 @@ const Blog = ({ blog, updateBlogLikes, notify }) => {
       console.error('Error liking the blog:', error)
     }
   }
-  
+
   const deleteBlog = async () => {
     if (window.confirm(`Remove blog "${blog.title}" by ${blog.author}?`)) {
       try {
@@ -57,11 +57,11 @@ const Blog = ({ blog, updateBlogLikes, notify }) => {
     <div style={blogStyle}>
       <div>
         <h4 style={headingBlog}>
-          {blog.title}, {blog.author} 
+          {blog.title}, {blog.author}
           <button onClick={toggleDetails}>
             {showDetails ? 'hide' : 'view'}
           </button>
-        </h4> 
+        </h4>
       </div>
       {showDetails && (
         <div>
@@ -75,9 +75,9 @@ const Blog = ({ blog, updateBlogLikes, notify }) => {
             added by: {blog.user && blog.user.name ? blog.user.name : 'unknown'}
           </div>
           <div>
-          {blog.user && blog.user.username === JSON.parse(window.localStorage.getItem('loggedBlogappUser') || '{}').username && (
-            <button onClick={deleteBlog}> remove </button>
-          )}
+            {blog.user && blog.user.username === JSON.parse(window.localStorage.getItem('loggedBlogappUser') || '{}').username && (
+              <button onClick={deleteBlog}> remove </button>
+            )}
           </div>
         </div>
       )}
