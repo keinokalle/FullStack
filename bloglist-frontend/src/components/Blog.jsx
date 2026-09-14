@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import blogService from '../services/blogs'
 
-const Blog = ({ blog }) => {
+const Blog = ({ blog, updateBlogLikes, notify }) => {
   const [showDetails, setShowDetails] = useState(false)
+  const [likes, setLikes] = useState(blog.likes)
 
   const blogStyle = {
     paddingTop: 10,
@@ -21,12 +23,34 @@ const Blog = ({ blog }) => {
     setShowDetails(!showDetails)
   }
 
-  const like = () => {
+
+  const like = async () => {
     const newBlog = {
       ...blog,
-      likes: blog.likes + 1
+      likes: likes + 1,
+      user: blog.user && blog.user.id ? blog.user.id : blog.user
     }
-    
+    try {
+      const updated = await blogService.update(blog.id, newBlog)
+      setLikes(likes + 1)
+      updateBlogLikes(updated)
+    } catch (error) {
+      // Optionally handle error, e.g., show a notification
+      console.error('Error liking the blog:', error)
+    }
+  }
+  
+  const deleteBlog = async () => {
+    if (window.confirm(`Remove blog "${blog.title}" by ${blog.author}?`)) {
+      try {
+        await blogService.remove(blog.id)
+        updateBlogLikes(blog.id)
+        notify('Blog deleted successfully', 'success')
+      } catch (error) {
+        notify('Failed to delete blog post', 'error')
+        console.error('Error removing the blog:', error)
+      }
+    }
   }
 
   return (
@@ -45,10 +69,15 @@ const Blog = ({ blog }) => {
             url: {blog.url}
           </div>
           <div>
-            likes: {blog.likes} <button onClick={like}>like</button>
+            likes: {likes} <button onClick={like}>like</button>
           </div>
           <div>
             added by: {blog.user && blog.user.name ? blog.user.name : 'unknown'}
+          </div>
+          <div>
+          {blog.user && blog.user.username === JSON.parse(window.localStorage.getItem('loggedBlogappUser') || '{}').username && (
+            <button onClick={deleteBlog}> remove </button>
+          )}
           </div>
         </div>
       )}
