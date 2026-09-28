@@ -1,0 +1,25 @@
+{
+  "name": "fullstack",
+  "version": "1.0.0",
+  "description": "playwright tests",
+  "homepage": "https://github.com/keinokalle/FullStack#readme",
+  "bugs": {
+    "url": "https://github.com/keinokalle/FullStack/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keinokalle/FullStack.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.5.1"
+  }
+}

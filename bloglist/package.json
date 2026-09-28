@@ -9,7 +9,9 @@
     "test": "cross-env  NODE_ENV=test node --test-concurrency=1",
     "test:blog": "cross-env NODE_ENV=test node --test tests/blog_api.test.js",
     "test:user": "cross-env NODE_ENV=test node --test tests/user_validation.test.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "start:test": "cross-env NODE_ENV=test node --watch index.js"
+
   },
   "author": "Kalle Keinonen",
   "license": "ISC",
