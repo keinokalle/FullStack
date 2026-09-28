@@ -1,10 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
 import loginService from './services/login'
 import Blog from './components/Blog'
+import BlogList from './components/BlogList'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import Notification from './components/Notification'
+import {
+  BrowserRouter as Router,
+  Routes, Route, Link
+} from 'react-router-dom'
+import Blogs from './services/blogs'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -20,7 +26,7 @@ const App = () => {
     }, 5000)
   }
 
-  const blogFormRef = useRef()
+  
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -56,6 +62,7 @@ const App = () => {
       setPassword('')
 
       blogService.setToken(user.token)
+      notify('login successful', 'success')
     } catch (exception) {
       notify('wrong username or password', 'error')
     }
@@ -70,7 +77,7 @@ const App = () => {
     try {
       const returnedBlog = await blogService.create(blogObject)
       setBlogs([...blogs, returnedBlog].sort((a, b) => b.likes - a.likes))
-      blogFormRef.current.toggleVisibility()
+      
       notify(`A new blog "${returnedBlog.title}" by ${returnedBlog.author} added`, 'success')
     } catch (exception) {
       notify('Error creating blog', 'error')
@@ -96,7 +103,6 @@ const App = () => {
   const loginForm = () => (
     <div>
       <h2>log in to application</h2>
-      <Notification notification={notification} />
       <form onSubmit={handleLogin}>
         <label>
           username
@@ -121,25 +127,43 @@ const App = () => {
     </div>
   )
 
-  const blogsView = () => (
-    <div>
-      <h2>blogs</h2>
-      <Notification notification={notification} />
-      <div>
-        <p>{user.name} logged-in <button onClick={handleLogout}>logout</button></p>
-        <Togglable buttonLabel="new blog" ref={blogFormRef}>
-          <BlogForm createBlog={addBlog} />
-        </Togglable>
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog} updateBlogLikes={updateBlogLikes} notify={notify} />
-        )}
-      </div>
-    </div>
-  )
+  const padding = {
+    padding: 5
+  }
 
   return (
     <div>
-      {user === null ? loginForm() : blogsView()}
+      <Notification notification={notification} />
+      <Router>
+        <div>
+          <Link style={padding} to="/blogs">blogs</Link>
+          <Link style={padding} to="/create">new blog</Link>
+          {user === null ? <Link style={padding} to="/login">login</Link> : <button onClick={handleLogout}>logout</button>}
+        </div>
+
+        <Routes>
+          <Route path="/" element={
+            <BlogList user={user} blogs={blogs} updateBlogLikes={updateBlogLikes} notify={notify} />
+          } />
+          <Route path="/blogs" element={
+            <BlogList user={user}  blogs={blogs}  />
+          } />
+          <Route path="/blogs/:id" element={
+            <Blog 
+              blogs={blogs}
+              updateBlogLikes={updateBlogLikes} 
+              notify={notify}
+              user={user}
+            />
+          } />
+          <Route path="/create" element={
+            <BlogForm createBlog={addBlog} />
+            } />
+          <Route path="/login" element={
+            loginForm()
+          } />
+        </Routes>
+      </Router>   
     </div>
   )
 }
