@@ -1,4 +1,13 @@
 import { useState } from 'react'
+import { TextField, Button } from '@mui/material'
+import styled from 'styled-components'
+
+const InputDiv = styled.div`
+  display: flex;
+  flex-direction: column;
+  max-width: 200px;
+  gap: 20px;
+`
 
 const BlogForm = ({ createBlog }) => {
   const [title, setTitle] = useState('')
@@ -21,9 +30,9 @@ const BlogForm = ({ createBlog }) => {
     <div>
       <h2>create new</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-        title
-          <input
+        <InputDiv>
+          <TextField
+            variant='outlined'          
             type="text"
             value={title}
             aria-label="Title"
@@ -31,10 +40,9 @@ const BlogForm = ({ createBlog }) => {
             onChange={({ target }) => setTitle(target.value)}
             placeholder='write title here'
           />
-        </div>
-        <div>
-        author:
-          <input
+        
+          <TextField
+            variant='outlined'
             type="text"
             value={author}
             aria-label="Author"
@@ -42,10 +50,9 @@ const BlogForm = ({ createBlog }) => {
             onChange={({ target }) => setAuthor(target.value)}
             placeholder='write author here'
           />
-        </div>
-        <div>
-        url:
-          <input
+        
+          <TextField
+            variant='outlined'
             type="text"
             value={url}
             aria-label="Url"
@@ -53,8 +60,9 @@ const BlogForm = ({ createBlog }) => {
             onChange={({ target }) => setUrl(target.value)}
             placeholder='write url here'
           />
-        </div>
-        <button type="submit">create</button>
+        
+          <Button variant="contained" type="submit">create</Button>
+        </InputDiv>
       </form>
     </div>
   )

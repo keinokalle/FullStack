@@ -5,12 +5,32 @@ import BlogList from './components/BlogList'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
 import blogService from './services/blogs'
+import { TextField, Button } from '@mui/material'
 import Notification from './components/Notification'
 import {
   BrowserRouter as Router,
   Routes, Route, Link
 } from 'react-router-dom'
 import Blogs from './services/blogs'
+import styled from 'styled-components'
+
+const InputDiv = styled.div`
+  display: flex;
+  flex-direction: column;
+  max-width: 200px;
+  gap: 20px;
+`
+
+const NavigationBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  align-items: center;
+  background: aliceblue;
+`
+
+
+
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -104,42 +124,42 @@ const App = () => {
     <div>
       <h2>log in to application</h2>
       <form onSubmit={handleLogin}>
-        <label>
-          username
-          <input
+        <InputDiv>
+          <TextField id="standard-basic" label="Username" variant="standard"
             type="text"
             value={username}
             name="Username"
             onChange={({ target }) => setUsername(target.value)}
           />
-        </label>
-        <label>
-          password
-          <input
+          <TextField id="standard-basic" label="Password" variant="standard"
             type="password"
             value={password}
             name="Password"
             onChange={({ target }) => setPassword(target.value)}
           />
-        </label>
-        <button type="submit">login</button>
+          <Button variant="contained" type="submit">login</Button>
+        </InputDiv>
       </form>
     </div>
   )
 
   const padding = {
-    padding: 5
+    padding: 5,
   }
 
   return (
     <div>
-      <Notification notification={notification} />
+      
       <Router>
-        <div>
-          <Link style={padding} to="/blogs">blogs</Link>
-          <Link style={padding} to="/create">new blog</Link>
-          {user === null ? <Link style={padding} to="/login">login</Link> : <button onClick={handleLogout}>logout</button>}
-        </div>
+        <NavigationBar>
+          <h1>Blog App</h1>
+          <div>
+            <Link style={padding} to="/blogs">blogs</Link>
+            <Link style={padding} to="/create">new blog</Link>
+            {user === null ? <Link style={padding} to="/login">login</Link> : <button onClick={handleLogout}>logout</button>}
+          </div>
+        </NavigationBar>
+        <Notification notification={notification} />
 
         <Routes>
           <Route path="/" element={
@@ -163,7 +183,7 @@ const App = () => {
             loginForm()
           } />
         </Routes>
-      </Router>   
+      </Router>
     </div>
   )
 }

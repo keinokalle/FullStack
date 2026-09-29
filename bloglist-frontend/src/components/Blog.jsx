@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import blogService from '../services/blogs'
 import { useParams } from 'react-router-dom'
+import { Button } from '@mui/material'
 
 const Blog = ({ blogs, updateBlogLikes, notify, user }) => {
 
@@ -22,6 +23,13 @@ const Blog = ({ blogs, updateBlogLikes, notify, user }) => {
     margin: 10,
     marginLeft: 0,
     marginTop: 0
+  }
+
+  const rowStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8
   }
 
 
@@ -63,18 +71,19 @@ const Blog = ({ blogs, updateBlogLikes, notify, user }) => {
         <h4 style={headingBlog}>
           {blog.title}, {blog.author}
         </h4>
-        <div>
+        <div style={rowStyle}>
           url: {blog.url}
         </div>
-        <div>
-          likes: {likes} {user ? <button onClick={like}>like</button> : null}
+        <div style={rowStyle}>
+          likes: {likes}
+          {user ? <Button size="small" variant="contained" onClick={like}>like</Button> : null}
         </div>
-        <div>
+        <div style={rowStyle}>
           added by: {blog.user && blog.user.name ? blog.user.name : 'unknown'}
         </div>
-        <div>
+        <div style={rowStyle}>
           {user && blog.user && blog.user.username === JSON.parse(window.localStorage.getItem('loggedBlogappUser') || '{}').username && (
-            <button onClick={deleteBlog}> remove </button>
+            <Button size="small" color="error" variant="outlined" onClick={deleteBlog}>remove</Button>
           )}
         </div>
       </div>
